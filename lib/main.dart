@@ -2,9 +2,10 @@ import 'package:first_app/details.dart';
 import 'package:first_app/models/post_model.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp(),));
 }
 
 class MyApp extends StatelessWidget {
@@ -41,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<List<PostModel>> func_a() async {
+  Future<List<PostModel>> funcA() async {
     Dio dio = Dio();
     Response? response;
     try {
@@ -70,7 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           FutureBuilder<List<PostModel>>(
-            future: func_a(), // Asenkron fonksiyonu çağır
+            future: funcA(), // Asenkron fonksiyonu çağır
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator(); // Yükleniyor animasyonu göster

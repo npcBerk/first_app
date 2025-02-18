@@ -1,55 +1,50 @@
-import 'package:dio/dio.dart';
-import 'package:first_app/models/post_model.dart';
+import 'package:first_app/states/providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Details extends StatelessWidget {
+/*
+Bu kodu artık manuel değil riverpod kullanarak üretiyoruz.
+Riverpod kullanımı için ise states folderı altında provider.dart dosyası oluşturuyoruz.
+Orada oluşturduğumuz kodları "flutter pub run build_runner build" komutu ile derliyoruz.
+Bu da bize immutable kodlar üretir. Daha sonra bu kodları import ediyoruz.
+*/
+/*final postDetailsProvides =
+    FutureProvider.family<PostModel, int>((ref, id) async {
+  Dio dio = Dio();
+  Response response =
+      await dio.get("https://jsonplaceholder.typicode.com/posts/$id");
+  //return response.data;
+  //return PostModel.fromJson(response.data);//Hata alıyorum
+  return PostModel.fromJson(response.data as Map<String, dynamic>);
+});*/
+
+class Details extends ConsumerWidget {
   final int id;
 
   const Details({super.key, required this.id});
 
-  Future<PostModel> getDetails(id) async {
-    Dio dio = Dio();
-    Response? response;
-    try {
-      response =
-          await dio.get("https://jsonplaceholder.typicode.com/posts/${id}");
-    } catch (e) {
-      print("Error");
-    }
-    return PostModel.fromJson(response!.data);
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final postAsyncValue = ref.watch(postDetailsProvider(id));
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Details'),
-      ),
-      body: FutureBuilder<PostModel>(
-        future: getDetails(id),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator(); // Yükleniyor animasyonu göster
-          } else if (snapshot.hasError || snapshot.data == null) {
-            return const Text("Veri alınamadı!");
-          } else {
-            //return Text(snapshot.data ?? "Veri alınamadı");
-            final details = snapshot.data!;
-            return Column(
-              children: [
-                Text("Post ID: ${details.id}",
-                    style: const TextStyle(fontSize: 16)),
-                Text("Başlık: ${details.title}",
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 10),
-                Text("İçerik: ${details.body}",
-                    style: const TextStyle(fontSize: 14)),
-              ],
-            );
-          }
-        },
-      ),
-    );
+        appBar: AppBar(
+          title: Text('Details'),
+        ),
+        body: postAsyncValue.when(
+          //FutureProvider'ın .when metodu ile data, loading, error kodlarını yazıyoruz.
+          data: (data) => Column(
+            children: [
+              Text("Post ID: ${data.id}", style: const TextStyle(fontSize: 16)),
+              Text("Başlık: ${data.title}",
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
+              Text("İçerik : ${data.body}",
+                  style: const TextStyle(fontSize: 14)),
+            ],
+          ),
+          loading: () => const CircularProgressIndicator(),
+          error: (error, stack) => Text(error.toString()),
+        ));
   }
 }
