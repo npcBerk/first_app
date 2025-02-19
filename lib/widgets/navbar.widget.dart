@@ -24,17 +24,25 @@ class _NavbarWidgetState extends ConsumerState<NavbarWidget> {
         children: const [
           MyHomePage(title: 'Welcome to Home Page'),
           PostSearchBar(),
+          WidgetTestMenu(),
           SettingsMenu(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.shifting,
         currentIndex: selectedIndex,
         onTap: (index) => ref.read(navbarProvider).setSelectedIndex(index),
+        backgroundColor: Colors.red,
+        fixedColor: Colors.blue,
+        unselectedIconTheme: IconThemeData(color: Colors.green),
+        unselectedItemColor: Colors.red,
+        unselectedLabelStyle: TextStyle(color: Colors.green),
+        showUnselectedLabels: true,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Widget Test'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
     );

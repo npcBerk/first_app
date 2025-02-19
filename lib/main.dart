@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      //debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -136,6 +137,7 @@ class _SettingsMenuState extends ConsumerState<SettingsMenu> {
         title: Text('Settings'),
       ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Switch(
             value: true,
@@ -143,6 +145,41 @@ class _SettingsMenuState extends ConsumerState<SettingsMenu> {
               value = !value;
             },
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class WidgetTestMenu extends ConsumerStatefulWidget {
+  const WidgetTestMenu({super.key});
+
+  @override
+  ConsumerState<WidgetTestMenu> createState() => _WidgetTestMenuState();
+}
+
+class _WidgetTestMenuState extends ConsumerState<WidgetTestMenu> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Widget Test Menu')),
+      body: Column(
+        children: [
+          Text('Widget Test Menu'),
+          Row(
+            children: [
+              //Flexible içerisinde width verince expanded boşa düşen alanı kaplamıyor.
+              //Flexible yerine SizedBox kullanılırsa expanded boşa düşen alanı kaplar.
+              Flexible(
+                child: Container(width: 100, height: 100, color: Colors.red),
+              ),
+              Expanded(
+                flex: 1,
+                child: Container(height: 100, color: Colors.blue),
+              ),
+            ],
+          ),
+          //SizedBox(height: 100,),
         ],
       ),
     );
