@@ -33,15 +33,19 @@ class Details extends ConsumerWidget {
         ),
         body: postAsyncValue.when(
           //FutureProvider'ın .when metodu ile data, loading, error kodlarını yazıyoruz.
-          data: (data) => Column(
-            children: [
-              Text("Post ID: ${data.id}", style: const TextStyle(fontSize: 16)),
-              Text("Başlık: ${data.title}",
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
-              Text("İçerik : ${data.body}",
-                  style: const TextStyle(fontSize: 14)),
-            ],
+          data: (data) => Center(
+            child: Column(
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                Text("Post ID: ${data.id}",
+                    style: const TextStyle(fontSize: 16)),
+                Text("Başlık: ${data.title}",
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
+                Text("İçerik : ${data.body}",
+                    style: const TextStyle(fontSize: 14)),
+              ],
+            ),
           ),
           loading: () => const CircularProgressIndicator(),
           error: (error, stack) => Text(error.toString()),
