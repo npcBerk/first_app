@@ -156,5 +156,22 @@ class _PostDetailsProviderElement
   @override
   int get id => (origin as PostDetailsProvider).id;
 }
+
+String _$postListHash() => r'4e8fbf512834e8c32c7228e9fe66dae99ff50752';
+
+/// See also [postList].
+@ProviderFor(postList)
+final postListProvider = AutoDisposeFutureProvider<List<PostModel>>.internal(
+  postList,
+  name: r'postListProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$postListHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef PostListRef = AutoDisposeFutureProviderRef<List<PostModel>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

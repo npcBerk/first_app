@@ -1,11 +1,13 @@
 import 'package:first_app/details.dart';
-import 'package:first_app/models/post_model.dart';
+import 'package:first_app/states/providers.dart';
+import 'package:first_app/widgets/navbar.widget.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(const ProviderScope(child: MyApp(),));
+  runApp(const ProviderScope(
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -20,112 +22,128 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const NavbarWidget(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({super.key, required this.title});
 
   final String title;
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  ConsumerState<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _MyHomePageState extends ConsumerState<MyHomePage> {
+  @override
+  Widget build(BuildContext context) {
+    final postList = ref.watch(postListProvider);
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+    return Scaffold(
+      body: ListView.builder(
+        itemCount: postList.value?.length ?? 0,
+        itemBuilder: (BuildContext context, int index) {
+          return GestureDetector(
+            onTap: () {
+              postList.when(
+                data: (data) => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Details(
+                      id: data[index].userId,
+                    ),
+                  ),
+                ),
+                error: (error, stack) => Text(error.toString()),
+                loading: () => const CircularProgressIndicator(),
+              );
+            },
+            child: Column(
+              children: [
+                postList.when(
+                  data: (data) => Text("User ID: ${data[index].userId}",
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  error: (error, stack) => Text(error.toString()),
+                  loading: () => const CircularProgressIndicator(),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
+}
 
-  Future<List<PostModel>> funcA() async {
-    Dio dio = Dio();
-    Response? response;
-    try {
-      response = await dio.get("https://jsonplaceholder.typicode.com/posts");
-    } catch (e) {
-      print("Error");
-    }
-    List<PostModel> list = [];
+class PostSearchBar extends ConsumerStatefulWidget {
+  const PostSearchBar({super.key});
 
-    for (var element in (response!.data as List<dynamic>)) {
-      list.add(PostModel.fromJson(element));
-    }
+  @override
+  ConsumerState<PostSearchBar> createState() => _PostSearchBarState();
+}
 
-    return list;
+class _PostSearchBarState extends ConsumerState<PostSearchBar> {
+  @override
+  Widget build(BuildContext context) {
+    final postList = ref.watch(postListProvider);
+    return Scaffold(
+      body: TextField(
+        decoration: const InputDecoration(
+          hintText: 'Enter post ID',
+          contentPadding: EdgeInsets.all(16),
+        ),
+        keyboardType: TextInputType.number,
+        onSubmitted: (id) {
+          if (id.isNotEmpty) {
+            postList.when(
+              data: (data) {
+                final index = int.tryParse(id);
+                if (index != null && index < data.length) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Details(
+                        id: data[index].userId,
+                      ),
+                    ),
+                  );
+                }
+              },
+              error: (error, stack) => null,
+              loading: () => null,
+            );
+          }
+        },
+      ),
+    );
   }
+}
 
+class SettingsMenu extends ConsumerStatefulWidget {
+  const SettingsMenu({super.key});
+
+  @override
+  ConsumerState<SettingsMenu> createState() => _SettingsMenuState();
+}
+
+class _SettingsMenuState extends ConsumerState<SettingsMenu> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text('Settings'),
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          FutureBuilder<List<PostModel>>(
-            future: funcA(), // Asenkron fonksiyonu çağır
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator(); // Yükleniyor animasyonu göster
-              } else if (snapshot.hasError || snapshot.data == null) {
-                return const Text("Veri alınamadı!");
-              } else {
-                //return Text(snapshot.data ?? "Veri alınamadı");
-                final post = snapshot.data!;
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                        itemCount: post.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => Details(
-                                    id: post[index].userId,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Column(
-                              children: [
-                                Text("User ID: ${post[index].userId}",
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                          );
-                        }),
-                  ),
-                );
-              }
+        children: [
+          Switch(
+            value: true,
+            onChanged: (value) {
+              value = !value;
             },
           ),
-          const Text(
-            'You have pushed the button this many times:',
-          ),
-          Text(
-            '$_counter',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
